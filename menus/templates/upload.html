@@ -1,15 +1,17 @@
 <!-- templates/upload.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Upload Menu Image</title>
-</head>
-<body>
-    <h1>Upload Menu Image</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Upload</button>
-    </form>
-</body>
-</html>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Upload</button>
+</form>
+{% if items %}
+    <h2>Extracted Items:</h2>
+    <ul>
+        {% for item, price in items %}
+            <li>{{ item }} - ₹{{ price }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}

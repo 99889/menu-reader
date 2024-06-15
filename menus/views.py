@@ -8,6 +8,7 @@ import pytesseract
 from .models import Restaurant, Menu, MenuItem
 from .forms import UploadImageForm
 
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 def upload_image(request):
     if request.method == 'POST':
         form = UploadImageForm(request.POST, request.FILES)
@@ -22,23 +23,30 @@ def upload_image(request):
             menu, _ = Menu.objects.get_or_create(restaurant=restaurant, category="Sample Category")
             for name, price in items:
                 MenuItem.objects.create(menu=menu, name=name, price=price)
-            return JsonResponse({'items': items})
+            return render(request, 'upload.html', {'form': form, 'items': items})
+        else:
+            return render(request, 'upload.html', {'form': form, 'error': 'Form is not valid'})
     else:
         form = UploadImageForm()
     return render(request, 'upload.html', {'form': form})
 
+
 def ocr_image(image_path):
     img = Image.open(image_path)
-    text = pytesseract.image_to_string(img)
+    text = pytesseract.image_to_string(img, lang='eng')  # Specify language if needed
+    print("OCR Text:", text)  # Debugging output
     return parse_menu_text(text)
 
 def parse_menu_text(text):
     lines = text.split('\n')
     items = []
     for line in lines:
-        if '₹' in line:
+        print("Line:", line)  # Debugging output
+        if '₹' in line:  # Ensure this matches the actual format
             item, price = line.rsplit('₹', 1)
             items.append((item.strip(), price.strip()))
+        else:
+            print("No ₹ found in line:", line)  # Debugging output
     return items
 
 def get_restaurants(request):
